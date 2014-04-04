@@ -2,6 +2,10 @@
 
 # Usage 'python preprocessor.py [filename]'
 
+# TODO: Make functional.
+# TODO: Write to file specified with ~output?
+# TODO: Define Macros? Bit pie in the sky.
+
 from parse import *
 
 import sys
