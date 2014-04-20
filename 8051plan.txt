@@ -1,0 +1,34 @@
+One timer will run a serial connection (eventually to the PSoC).
+
+Basically, try this with the Minmon code.
+
+__One timer will run the cap sensing, since that needs to run in a timing sensitive manner.__
+
+load FE, loop through shifts.
+
+for each write out, loop an incrementing register, wait until a read achives FF, then return the register value.
+
+__The screen driver will run in the main loop__
+
+
+The display supports rendering any 16 "shapes". Each shape is one of...
+
+a null-shape (no effect) denoted	"N*******"
+a point, denoted			"P[X][Y]****"
+a line, denoted				"L[X1][Y1][X2][Y2]***"
+a ellipse, denoted			"E[CX][CY][A1X][A1Y][A2X][A2Y]*"
+
+other possible sensible shapes
+
+Text?					"T[X1][X2][char][char][char][char][char]" Possibly add a second opcode ('<'?) to allow continuing in the next few slots.
+a rectangle axis aligned		"R[X1][Y1][X2][Y2]***"
+a X, axis aligned			"X[X1][Y1][X2][Y2]***"
+a +, axis aligned			"+[X1][Y1][X2][Y2]***"
+
+Stored in a table. Each shape takes up 8 bytes, so can be indexed as a shifted offset added to the dptr (index*8 shift from a base pointer).
+Render methods should take in the dptr and be a self contained method to draw the shape with roughly consistent brighness. The drawing loop should be interruptable.
+
+The loop needs to check for new insert commands? Need to work out this... Might need more timer interuppts. Also possible -- a version of readchr that aborts after a passed interval of time.
+
+
+

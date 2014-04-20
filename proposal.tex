@@ -1,0 +1,109 @@
+\section{abstract}
+
+I propose to make a simple gaming console with a rather unusual gesture-based controller. To go along with this hardware, I will create a simple game (``Starfield'') akin to many online ``stunt pilot'' games. A detailed description of the game can be found in the software section.
+
+I'm interested in this project because I'm interested in making a system that can really sense the world and interact with a person. What we've done so far is great, and we have closed some interesting feedback loops, but they've always been fairly simple things we can model solely in 8051 assembly. I want to put a human in the loop and play with that. A video game is the simplest way I can think of to do this sensibly.
+
+\section{Hardware description}
+
+I propose two largely independent hardware systems, one for input, one for output. I will specify these systems separately.
+
+\subsection{Input Devices}
+
+I propose to use a number of large capacitive plates (likely 8, attached to all of P1), made of tinfoil, to sense the position of the players hands. These plates will be molded into a rough dome around the player's hands, which will be grounded with a wrist strap. The effective capacitance between each plate and the players hands will be calculated as shown in figure TODO -- the plates will be held at 5V most of the time, then drawn to 0V. By measuring the time required to return to a logical high after allowing the plate to reattach to 5V, a decent approximation of the time constant can be determined.
+
+In order to make sense of what I expect will be very noisy data from these plates, I will do a fair amount of software post-processing on the PSoC, described below. The PSoC will be connected via the serial connection, and I expect to provide data at at least 60Hz.
+
+If these plates prove to be too noisy to interpret, I will fall back first onto optical methods, and then onto mechanical controls (i.e. potentiometers with ADCs).
+
+\subsection{Display}
+
+To display the game to the player, a pair of DACs will be used to drive an oscilloscope that has been put in XY-mode. If possible, I will also use a P3 pin to enable/disable the beam. Various other display peripherals (i.e. a LED to indicate when the control capacitors are active / perhaps a way to disable the voltage for safety) will either be attached on P3 or on the 8255 if needed.
+
+A block diagram is included in figure TODO.
+
+\section{Software description}
+
+\subsection{Sensing and Interpreting}
+
+As described, the hardware ought to report a set of rise times, one for each plate. These rise times are, roughly speaking, inversely proportional to the distance between the plate and the player's grounded hand(s).
+
+To eliminate noise, I will average my data across 0.05 - 0.1s time frames. I expect that this will provide less noisy data and reduce throughput at the more expensive part of my procedure while preserving responsiveness.
+
+Following this, I will augment the measurement vector with inverse measurements (I'll denote this $x = \left< v, frac{1}{v} \right>$) to reflect inverse proportionality.
+
+These measurements will be fed into a Support Vector Regression module. I will train the module on my computer using data collected off the actual setup, because training is expensive and done off-line. The final measurements will be processed entirely on the PSoC, however.
+
+The parameters I intend to measure are given in figure TODO. These heavily influence the positioning of my plates -- I try to put plates in places where the distances to the various gestures differ the most.
+
+\subsection{The Game}
+
+The game will consist of a spaceship (represented by a 3D point and rotation) and a ring (given by a another 3D point, rotation, and a radius, which is fixed but in theory dynamically adjustable). The goal of the player is to have their ship fly through the ring. The player will control only the pitch and roll of their craft -- their speed in the inertial frame of the ring is constant for simplicity.
+
+For flavor and to make navigation easier, a starfield will be drawn around the player. The starfield is a function only of the rotation -- not the position of the player. For simplicity's sake, no more than 6 stars will be visible to the player at a time.
+
+\subsection{Primitive Graphics Engine}
+
+I will make a primitive 3D rendering engine based on a repositionable pinhole projection camera. It will render points, line segments, and circles onto the viewing surface -- of these circles are by far the most complicated to render, however, I have already made mathematical progress on this problem, so I am confident it is not as complex a problem as it might seem.
+
+\subsection{Display Driver}
+
+The vector display will be able to display up to $16$ shapes at one (if I have time, I will attempt to increase this to $64$ shapes). Every shape is one of the following
+
+\begin{description}
+
+\item[a point] generally denoted with \inlinecode{`P'}.
+
+\item[an ellipse] generally denoted with \inlinecode{`O'}.
+
+\item[a line segment] generally denoted with \inlinecode{`L'}.
+
+\end{description}
+
+Other shapes may be implemented, depending on the amount of effort they require. At the top of the list of things I would like to implement are
+
+\begin{description}
+
+\item[a rectangle] generally denoted with \inlinecode{`R'}.
+
+\item[a cross] generally denoted with \inlinecode{`X'}.
+
+\item[a triangle] generally denoted with \inlinecode{`T'}.
+
+\end{description}
+
+\end{description}
+
+\section{Project scope and management}
+
+I have designed my system to be as modular as possible. In ever respect, if I find I am unable to complete a particular module for unseen technical reasons, I have a series of progressive fallbacks. I can make the video game less complicated, input controls with potentiometer, or make the display code special purpose. Conversely, If I have more time, there are lots of directions to explore.
+
+Some simpler ideas:
+
+\begin{itemize}
+
+\item I can make the game more complex -- for instance adding asteroids or enemies that the player must either avoid or actively engage.
+
+\item I can make the graphics drivers more versatile, specifically by allowing more than 16 shapes (I'd probably aim for 64) to be drawn at one time. I can add new sorts of shapes to be drawn.
+
+\item Conversely in the renderer, I can add support for rendering 3d poly-meshes or metashapes, such as spheres or toruses.
+
+\end{itemize}
+
+As for ideas that I believe would require serious work and might warrant publication\footnote{To be honest, I think this is a rather high bar for any project done in 4 weeks.}
+
+\begin{itemize}
+
+\item By utilizing many more capacitive plates carefully positioned around a player's hands (~32), I could attempt to reconstruct fine details of their gestures, such as palm normal and finger position.
+
+\item I could develop more intelligent algorithms for redrawing the shapes, which might allow me to control their brightness and perhaps even texture (i.e. dotted vs. dashed vs. solid). I could develop extremely efficient algorithms to fill or texture arbitrary shapes? 
+
+\end{itemize}
+
+\section{Special Component needs}
+
+I will need an older (analog) oscilloscope. After discussion with Professor Lieb, I will begin by using one of the scopes in the 6.002 lab / the scope in my dorm after I have verified unit tests for the systems. I hope to obtain an analog oscilloscope to use in the 115 lab proper at some point, but in the mean time I do not expect to be hindered by it's absence.
+
+Much of my input hardware is something I will design and manufacture on my own. No exotic hardware should be needed, so do not expect to need special chips beyond an extra DAC.
+
+Early testing with a prototype capacitive setup has proved promising. If, however, my original sensing plan does not work I may need to fall back onto optical or mechanical control, I may require additional ADC chips, or mechanical or optical components. I will alert staff of this if it occurs.

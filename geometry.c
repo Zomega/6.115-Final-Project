@@ -67,13 +67,6 @@ typedef struct {
 	vector3 row3;
 } matrix3;
 
-vector3 apply_matrix( matrix3 A, vector3 v ) {
-	vector3 result;
-	result.x = dot3( A.row1, v );
-	result.y = dot3( A.row2, v );
-	result.z = dot3( A.row3, v );
-};
-
 typedef matrix3 rotation3; // Other properties enforced by software. TODO: Check these / write them down.
 
 typedef struct {
@@ -100,7 +93,29 @@ typedef struct {
 
 matrix3 multiply_matrix3( matrix3 A, matrix3 B ) {
 	matrix3 result;
-	return A; //TODO Write this
+
+	// TODO: These are wrong...
+	result.row1.x = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+	result.row1.y = A.row1.x * B.row1.y + A.row1.y * B.row2.y + A.row1.z * B.row3.y;
+	result.row1.z = A.row1.x * B.row1.y + A.row1.y * B.row2.y + A.row1.z * B.row3.y;
+
+	result.row2.x = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+	result.row2.y = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+	result.row2.z = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+
+	result.row3.x = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+	result.row3.y = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+	result.row3.z = A.row1.x * B.row1.x + A.row1.y * B.row2.x + A.row1.z * B.row3.x;
+
+	return result; //TODO Write this
+};
+
+vector3 apply_matrix( matrix3 A, vector3 v ) {
+	vector3 result;
+	result.x = dot3( A.row1, v );
+	result.y = dot3( A.row2, v );
+	result.z = dot3( A.row3, v );
+	return result;
 };
 
 rotation3 multiply_rotation3( rotation3 R1, rotation3 R2 ) {
