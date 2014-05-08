@@ -1,7 +1,7 @@
-#include<stdio.h>
 // Compile on Linux x86 with `gcc main.c -lm -o main.o'
+#include<stdio.h>
 #include<stdlib.h>
-#include <conio.h>
+typedef enum { false, true } bool;
 
 #include "geometry.c"
 
@@ -12,6 +12,9 @@
 #include "display.c"
 
 #include "shanxi_gates.c"
+
+// Linux Specific includes...
+#include "kbhit.c"
 
 void print_vector( vector3* v ) {
 	printf( "%f \t%f \t%f\n", v->x, v->y, v->z );
@@ -53,33 +56,38 @@ void set_identity( rotation3* rot ) {
 	print_matrix( rot );
 }
 
+
+void update_controls() {
+	if(kbhit()){ // TODO: Linux alternative. Does not have to be PSoC compatible.
+		// TODO: see kbhit.c!
+		char c = getchar();
+		printf("%c\n", c);
+	}
+}
 int main() {
 	spaceship* s = malloc(sizeof(spaceship));
 	s->speed = 1;
 	set_identity( &(s->heading) );
-
-	rotation3 d_heading;
 	
 	int i = 0;
 	for(; i < 10; i++) {
-		//if(kbhit()){ // TODO: Linux alternative. Does not have to be PSoC compatible.
-		// TODO: see kbhit.c!
-		//	char c = getch();
-		//	printf("%c\n", c);
-		//}
 		print_spaceship( s );
+
+		float yaw = 0.0;
+		float pitch = 0.0;
+		float roll = 0.2;
+
+		rotation3 d_heading = get_rotation( yaw, pitch, roll );
 		update_spaceship( s, d_heading );
+		printf("\n");
 		//gameloop( s, (circle3*)s );
 	}
 
-	vector3* p = malloc(sizeof(vector3));
+	vector2 v;
+	v.x = 1;
+	v.y = 10;
+	vector2* w = clip_to_screen( &v, 6, 4 );
+	printf( "%f \t%f\n", w->x, w->y );
 
-	p->x = 3;
-	p->y = 4;
-	p->z = 0;
-
-	printf( "%f\n", p->x );
-	printf( "%f\n", len3(*p) );
-	printf("\nHello World,\nWelcome to my first C program in Ubuntu Linux\n\n");
-	return(0);
+	return;
 };

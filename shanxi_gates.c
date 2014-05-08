@@ -21,10 +21,36 @@
 //
 // Clearly more slots could be good.
 
-#define NUM_STARS 20
-vector3 stars[ NUM_STARS ]; // TODO: Generate the table of these. Need to have the property that no more than 6 are in any frame at a time.
 
-void gameloop( spaceship* s, circle3* loop ) {
+/******************************************************************************
+*
+* BEGIN Generated Code
+*
+* This code is generated from star_gen.py
+* The unit vectors involved here have the property that no more than 6 are in
+* any frame at a time.
+*
+* Therefore DO NOT EDIT THESE BY HAND. Regenerate them until a desired property
+* is achived.
+*
+******************************************************************************/
+#define NUM_STARS 7
+vector3 stars[ NUM_STARS ] = {
+	0.861333047357, 0.47083519562, -0.190839199581,
+	0.822868493002, -0.523455109983, 0.221093172799,
+	-0.900596228706, -0.298527877024, -0.315923312655,
+	-0.0235562239282, -0.879295873662, -0.475693042701,
+	0.579002403227, 0.692105083741, -0.430983491699,
+	0.849317844461, -0.0369396140616, -0.526587755263,
+	0.478818654653, -0.63562308656, -0.605570795026,
+};
+/******************************************************************************
+*
+* END Generated code.
+*
+******************************************************************************/
+
+void update_state( spaceship* s, circle3* loop, float d_time ) {
 
 	float pitch = 0; // Ranges from +1 to -1
 	float roll = 0; //  Ranges from +1 to -1
